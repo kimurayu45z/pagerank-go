@@ -1,7 +1,7 @@
 package pagerank
 
 import (
-	"github.com/gonum/matrix/mat64"
+	"gonum.org/v1/gonum/matrix"
 )
 
 /*
@@ -69,7 +69,7 @@ You can reduce computational complexity by using recently calculated result for 
 func (network *Network) Score(initialScore []float64, exp int) []float64 {
 	n := network.n
 
-	p := mat64.NewDense(n, n, nil)
+	p := matrix.NewDense(n, n, nil)
 
 	for i := range network.links {
 		for j := range network.links[i] {
@@ -80,7 +80,7 @@ func (network *Network) Score(initialScore []float64, exp int) []float64 {
 	if initialScore == nil {
 		initialScore = network.initialScore()
 	}
-	s := mat64.NewDense(1, n, initialScore)
+	s := matrix.NewDense(1, n, initialScore)
 
 	for i := 0; i < exp; i++ {
 		s.Mul(s, p)
