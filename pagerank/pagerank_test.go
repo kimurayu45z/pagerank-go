@@ -10,7 +10,7 @@ import (
 func TestPagerank(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
 
-	n := 1000
+	n := 10000
 
 	a := make([][]float64, n)
 	for i := 0; i < n; i++ {

@@ -15,27 +15,23 @@ func Score(a [][]float64, exp int) []float64 {
 
 	for i, row := range a {
 		rowsum[i] = 0
-		for j, column := range row {
+		for _, column := range row {
 			if column < 0 {
 				panic("")
 			}
-			if i == j {
-				rowsum[i]++
-			} else {
-				rowsum[i] += column
-			}
+			rowsum[i] += column
 		}
 	}
 
 	p := mat64.NewDense(n, n, nil)
 
 	for i := 0; i < n; i++ {
+		if rowsum[i] == 0 {
+			p.Set(i, i, 1)
+			continue
+		}
 		for j := 0; j < n; j++ {
-			if i == j {
-				p.Set(i, j, float64(1)/float64(rowsum[i]))
-			} else {
-				p.Set(i, j, a[i][j]/float64(rowsum[i]))
-			}
+			p.Set(i, j, a[i][j]/float64(rowsum[i]))
 		}
 	}
 
