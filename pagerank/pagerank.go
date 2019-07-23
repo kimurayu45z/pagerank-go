@@ -4,41 +4,40 @@ import (
 	"github.com/gonum/matrix/mat64"
 )
 
+func (network *Network) initialScore() []float64 {
+	value := make([]float64, network.n)
+	v := float64(1) / float64(network.n)
+
+	for i := 0; i < network.n; i++ {
+		value[i] = v
+	}
+
+	return value
+}
+
 /*
 Score Get the score of Pagerank
-a a[i][j] is 0 if i doesn't have link to j, otherwise weighted value based on 1
-exp Exponent of power method. The more exp the more precision for true value it has , and the more exp the more rouding error there is.
+initialScore can be nil
+exp Exponent of power method.
+The more exp the more precision for true value it has, and the more exp the more computational complexity and rouding error there is.
+You can reduce computational complexity by using recently calculated result for initial score and decreasing exp.
 */
-func Score(a [][]float64, exp int) []float64 {
-	n := len(a)
-	rowsum := make([]float64, n)
-
-	for i, row := range a {
-		rowsum[i] = 0
-		for _, column := range row {
-			if column < 0 {
-				panic("")
-			}
-			rowsum[i] += column
-		}
-	}
+func (network *Network) Score(initialScore []float64, exp int) []float64 {
+	n := network.n
 
 	p := mat64.NewDense(n, n, nil)
 
-	for i := 0; i < n; i++ {
-		if rowsum[i] == 0 {
-			p.Set(i, i, 1)
-			continue
-		}
-		for j := 0; j < n; j++ {
-			p.Set(i, j, a[i][j]/float64(rowsum[i]))
+	for i := range network.links {
+		for j := range network.links[i] {
+			p.Set(i, j, network.links[i][j]/network.sum[i])
 		}
 	}
 
-	s := mat64.NewDense(1, n, nil)
-	for j := 0; j < n; j++ {
-		s.Set(0, j, float64(1)/float64(n))
+	if initialScore == nil {
+		initialScore = network.initialScore()
 	}
+	s := mat64.NewDense(1, n, initialScore)
+
 	for i := 0; i < exp; i++ {
 		s.Mul(s, p)
 	}

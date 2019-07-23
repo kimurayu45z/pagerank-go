@@ -11,21 +11,24 @@ func TestPagerank(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
 
 	n := 10000
+	fmt.Println("n:", n)
 
-	a := make([][]float64, n)
+	network := NewNetwork()
+
 	for i := 0; i < n; i++ {
-		a[i] = make([]float64, n)
 		for j := 0; j < n; j++ {
-			a[i][j] = rand.Float64()
+			r := rand.Float64()
+			if r < 0.5 {
+				continue
+			}
+			network.AddLink(i, j, r)
 		}
 	}
 
-	fmt.Println("n:", n)
 	start := time.Now()
-
-	rank := Score(a, 10)
-
+	rank := network.Score(nil, 10)
 	end := time.Now()
+	fmt.Println(end.Sub(start).Seconds(), "seconds")
 
 	sum := float64(0)
 	for i := 0; i < n; i++ {
@@ -33,5 +36,24 @@ func TestPagerank(t *testing.T) {
 	}
 	fmt.Println("sum", sum)
 
+	for i := 0; i < n; i++ {
+		for j := 0; j < n; j++ {
+			r := rand.Float64()
+			if r < 0.9 {
+				continue
+			}
+			network.AddLink(i, j, r)
+		}
+	}
+
+	start = time.Now()
+	rank = network.Score(rank, 1)
+	end = time.Now()
 	fmt.Println(end.Sub(start).Seconds(), "seconds")
+
+	sum = float64(0)
+	for i := 0; i < n; i++ {
+		sum += rank[i]
+	}
+	fmt.Println("sum", sum)
 }
