@@ -10,7 +10,7 @@ import (
 func TestPagerank(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
 
-	n := 10000
+	n := 1000
 	fmt.Println("n:", n)
 
 	network := NewNetwork()

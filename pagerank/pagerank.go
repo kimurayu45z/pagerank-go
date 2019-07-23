@@ -1,11 +1,11 @@
 package pagerank
 
 import (
-	"gonum.org/v1/gonum/matrix"
+	"gonum.org/v1/gonum/mat"
 )
 
 /*
-Network is struct of network
+Network stands for Pagerank network
 */
 type Network struct {
 	n     int
@@ -25,7 +25,7 @@ func NewNetwork() *Network {
 }
 
 /*
-AddLink adds link struct to network
+AddLink adds link from i to j to network
 */
 func (network *Network) AddLink(i int, j int, weight float64) {
 	if i < 0 || j < 0 {
@@ -60,16 +60,19 @@ func (network *Network) initialScore() []float64 {
 }
 
 /*
-Score Get the score of Pagerank
-initialScore can be nil
-exp Exponent of power method.
-The more exp the more precision for true value it has, and the more exp the more computational complexity and rouding error there is.
-You can reduce computational complexity by using recently calculated result for initial score and decreasing exp.
+Score returns the score of Pagerank.
+initialScore can be nil.
+exp is exponent of power method.
+Pros.
+- precision
+Cons.
+- computational complexity
+- rounded error
 */
 func (network *Network) Score(initialScore []float64, exp int) []float64 {
 	n := network.n
 
-	p := matrix.NewDense(n, n, nil)
+	p := mat.NewDense(n, n, nil)
 
 	for i := range network.links {
 		for j := range network.links[i] {
@@ -80,7 +83,7 @@ func (network *Network) Score(initialScore []float64, exp int) []float64 {
 	if initialScore == nil {
 		initialScore = network.initialScore()
 	}
-	s := matrix.NewDense(1, n, initialScore)
+	s := mat.NewDense(1, n, initialScore)
 
 	for i := 0; i < exp; i++ {
 		s.Mul(s, p)
