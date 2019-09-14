@@ -1,98 +1,52 @@
 package pagerank
 
-import (
-	"gonum.org/v1/gonum/mat"
-)
+/*
+Vector Vector
+*/
+type Vector = map[string]float64
 
 /*
-Network stands for Pagerank network
+Matrix Matrix
 */
-type Network struct {
-	n     int
-	sum   map[int]float64
-	links map[int]map[int]float64
+type Matrix = map[string]Vector
+
+/*
+GetStochastixMatrix GetStochastixMatrix
+*/
+func GetStochastixMatrix(linkMatrix Matrix) Matrix {
+	stochasticMatrix := Matrix{}
+
+	for src, vector := range linkMatrix {
+		sum := float64(0)
+
+		for _, value := range vector {
+			sum += value
+		}
+
+		v := Vector{}
+
+		for dst, value := range vector {
+			v[dst] = value / sum
+		}
+		stochasticMatrix[src] = v
+	}
+
+	return stochasticMatrix
 }
 
 /*
-NewNetwork creates new Network
+TransitionScore TransitionScore
 */
-func NewNetwork() *Network {
-	return &Network{
-		0,
-		make(map[int]float64),
-		make(map[int]map[int]float64),
-	}
-}
+func TransitionScore(currentScoreVector Vector, stochasticMatrix Matrix) Vector {
+	score := Vector{}
 
-/*
-AddLink adds link from i to j to network
-*/
-func (network *Network) AddLink(i int, j int, weight float64) {
-	if i < 0 || j < 0 {
-		panic("")
-	}
-	if network.n < i+1 {
-		network.n = i + 1
-	}
-	if network.n < j+1 {
-		network.n = j + 1
-	}
-	if network.links[i] == nil {
-		network.links[i] = make(map[int]float64)
-	}
-	if network.links[i][j] != 0 {
-		network.sum[i] -= network.links[i][j]
-	}
-
-	network.sum[i] += weight
-	network.links[i][j] = weight
-}
-
-func (network *Network) initialScore() []float64 {
-	value := make([]float64, network.n)
-	v := float64(1) / float64(network.n)
-
-	for i := 0; i < network.n; i++ {
-		value[i] = v
-	}
-
-	return value
-}
-
-/*
-Score returns the score of Pagerank.
-initialScore can be nil.
-exp is exponent of power method.
-Pros.
-- precision
-Cons.
-- computational complexity
-- rounded error
-*/
-func (network *Network) Score(initialScore []float64, exp int) []float64 {
-	n := network.n
-
-	p := mat.NewDense(n, n, nil)
-
-	for i := range network.links {
-		for j := range network.links[i] {
-			p.Set(i, j, network.links[i][j]/network.sum[i])
+	for src, vector := range stochasticMatrix {
+		for dst, value := range vector {
+			dstCurrentScore := score[dst]
+			srcCurrentScore := currentScoreVector[src]
+			score[dst] = dstCurrentScore + srcCurrentScore*value
 		}
 	}
 
-	if initialScore == nil {
-		initialScore = network.initialScore()
-	}
-	s := mat.NewDense(1, n, initialScore)
-
-	for i := 0; i < exp; i++ {
-		s.Mul(s, p)
-	}
-
-	value := make([]float64, n)
-	for i := 0; i < n; i++ {
-		value[i] = s.At(0, i)
-	}
-
-	return value
+	return score
 }
