@@ -1,9 +1,5 @@
 package pagerank
 
-import (
-	"errors"
-)
-
 /*
 Vector Vector
 */
@@ -30,13 +26,6 @@ func (matrix Matrix) Get(src string, dst string) float64 {
 Set Set
 */
 func (matrix Matrix) Set(src string, dst string, value float64) {
-	if value == 0 {
-		delete(matrix[src], dst)
-		if len(matrix[src]) == 0 {
-			delete(matrix, src)
-		}
-		return
-	}
 	if matrix[src] == nil {
 		matrix[src] = Vector{}
 	}
@@ -48,18 +37,28 @@ GetStochastixMatrix GetStochastixMatrix
 */
 func GetStochastixMatrix(linkMatrix Matrix) Matrix {
 	stochasticMatrix := Matrix{}
+	sum := Vector{}
+	node := map[string]bool{}
 
 	for src := range linkMatrix {
-		sum := float64(0)
-
 		for dst := range linkMatrix[src] {
-			sum += linkMatrix[src][dst]
+			sum[src] += linkMatrix[src][dst]
+			node[dst] = true
 		}
+		node[src] = true
+	}
 
+	for src := range linkMatrix {
 		v := Vector{}
 
 		for dst, value := range linkMatrix[src] {
-			v[dst] = value / sum
+			v[dst] = value / sum[src]
+
+			if linkMatrix[dst] == nil && stochasticMatrix[dst] == nil {
+				for n := range node {
+					stochasticMatrix.Set(dst, n, float64(1)/float64(len(node)))
+				}
+			}
 		}
 		stochasticMatrix[src] = v
 	}
@@ -70,9 +69,9 @@ func GetStochastixMatrix(linkMatrix Matrix) Matrix {
 /*
 TransitionScore TransitionScore
 */
-func TransitionScore(currentScoreVector Vector, stochasticMatrix Matrix) (Vector, error) {
+func TransitionScore(currentScoreVector Vector, stochasticMatrix Matrix) Vector {
 	if stochasticMatrix == nil || len(stochasticMatrix) == 0 {
-		return currentScoreVector, errors.New("Invalid stochastic matrix")
+		return Vector{}
 	}
 	if currentScoreVector == nil {
 		currentScoreVector = Vector{}
@@ -93,5 +92,5 @@ func TransitionScore(currentScoreVector Vector, stochasticMatrix Matrix) (Vector
 		}
 	}
 
-	return score, nil
+	return score
 }
