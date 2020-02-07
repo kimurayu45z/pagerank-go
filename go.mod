@@ -1,4 +1,4 @@
-module github.com/yukimura45z/pagerank-go
+module github.com/KimuraYu45z/pagerank-go
 
 go 1.13
 
